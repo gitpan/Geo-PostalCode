@@ -5,7 +5,7 @@ use vars qw($VERSION);
 use DB_File;
 use POSIX;
 
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 use constant EARTH_RADIUS => 3956;
 use constant PI => 3.14159265;
@@ -228,8 +228,8 @@ Geo::PostalCode - Find closest zipcodes, distance, latitude, and longitude.
   my $lon          = $record->{lon};
   my $postal_codes = $record->{postal_codes}:
 
-  my $postal_codes = $gp->find_nearby_postal_codes($lat, $lon,
-                                                   miles => 50);
+  my $postal_codes = $gp->nearby_postal_codes(lat => $lat, lon => $lon,
+                                                   distance => 50);
 
 =head1 DESCRIPTION
 
@@ -274,9 +274,9 @@ Returns a hash reference containing three keys:
 
 Returns the distance in miles between the two postal codes in @postal_codes.
 
-=item $postal_codes = $gp->nearby_postal_codes(lat => $lat, lon => $lon, miles => $miles );
+=item $postal_codes = $gp->nearby_postal_codes(lat => $lat, lon => $lon, distance => $distance );
 
-Returns an array reference containing postal codes with $miles miles
+Returns an array reference containing postal codes with $distance miles
 of ($lat, $lon).
 
 =item $postal_codes = $gp->query_postal_codes(lat => $lat, lon => $lon, miles => $miles, select => \@select, order_by => $order_by );

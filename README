@@ -11,7 +11,7 @@ To access the data, it uses Berkeley DB, which is fast and portable
 
 To install, see the INSTALL file.
 
-Copyright (c) 2001, T.J. Mather, tjmather@tjmather.com
+Copyright (c) 2002, MaxMind.com, tjmather@maxmind.com
 
 All rights reserved.  This package is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself.

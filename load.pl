@@ -18,7 +18,7 @@ tie %zipcode, 'DB_File', ZIPCODEDB, O_CREAT, 0666, $DB_BTREE;
 tie %cell,    'DB_File', CELLDB,    O_CREAT, 0666, $DB_BTREE;
 tie %city,    'DB_File', CITYDB,    O_CREAT, 0666, $DB_BTREE;
 
-open ZIP, "Geo-PostalCode_19991101.txt";
+open ZIP, "Geo-PostalCode_19991101.txt" or die "Cant find Geo-PostalCode_19991101.txt (download from http://tjmather.com/Geo-PostalCode_19991101.txt.gz)\n";
 <ZIP>;
 while (<ZIP>) {
   chomp;
