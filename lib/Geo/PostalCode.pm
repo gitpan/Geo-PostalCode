@@ -5,7 +5,7 @@ use vars qw($VERSION);
 use DB_File;
 use POSIX;
 
-$VERSION = '0.04';
+$VERSION = '0.05';
 
 use constant EARTH_RADIUS => 3956;
 use constant PI => 3.14159265;
@@ -279,9 +279,9 @@ Returns the distance in miles between the two postal codes in @postal_codes.
 Returns an array reference containing postal codes with $distance miles
 of ($lat, $lon).
 
-=item $postal_codes = $gp->query_postal_codes(lat => $lat, lon => $lon, miles => $miles, select => \@select, order_by => $order_by );
+=item $postal_codes = $gp->query_postal_codes(lat => $lat, lon => $lon, distance => $distance, select => \@select, order_by => $order_by );
 
-Returns an array reference of hash references with $miles miles of ($lat, $lon).
+Returns an array reference of hash references with $distance miles of ($lat, $lon).
 Each hash reference contains the following fields:
 
   * postal_code - Postal Code
@@ -306,7 +306,7 @@ It is available from http://www.cryptnet.net/fsp/zipdy/
 
 =head1 AUTHOR
 
-Copyright (c) 2001, T.J. Mather, tjmather@tjmather.com
+Copyright (c) 2002, T.J. Mather, tjmather@tjmather.com
 
 All rights reserved.  This package is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself.

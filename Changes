@@ -1,5 +1,9 @@
 Revision history for Perl extension Geo::PostalCode.
 
+0.05  08/19/2002
+	- Fix for load.pl on FreeBSD and Mac OS X (Andrew Brosnan)
+	- more POD fixes
+
 0.04  07/18/2002
 	- POD fixes (Paul Kooros)
 	- Error handling for load.pl (Paul Kooros)

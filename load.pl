@@ -14,9 +14,9 @@ unlink ZIPCODEDB if -f ZIPCODEDB;
 unlink CELLDB    if -f CELLDB;
 unlink CITYDB    if -f CITYDB;
 
-tie %zipcode, 'DB_File', ZIPCODEDB, O_CREAT, 0666, $DB_BTREE;
-tie %cell,    'DB_File', CELLDB,    O_CREAT, 0666, $DB_BTREE;
-tie %city,    'DB_File', CITYDB,    O_CREAT, 0666, $DB_BTREE;
+tie (%zipcode, 'DB_File', ZIPCODEDB, O_RDWR|O_CREAT, 0666, $DB_BTREE) or die "cannot tie %zipcode to file";
+tie (%cell,    'DB_File', CELLDB,    O_RDWR|O_CREAT, 0666, $DB_BTREE) or die "cannot tie %cell to file";
+tie (%city,    'DB_File', CITYDB,    O_RDWR|O_CREAT, 0666, $DB_BTREE) or die "cannot tie %city to file";
 
 open ZIP, "Geo-PostalCode_19991101.txt" or die "Cant find Geo-PostalCode_19991101.txt (download from http://tjmather.com/Geo-PostalCode_19991101.txt.gz)\n";
 <ZIP>;
