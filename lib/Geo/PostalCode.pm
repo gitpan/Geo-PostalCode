@@ -5,7 +5,7 @@ use vars qw($VERSION);
 use DB_File;
 use POSIX;
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 use constant EARTH_RADIUS => 3956;
 use constant PI => 3.1415;
@@ -257,35 +257,18 @@ Berkeley Database files in $db_dir.
 
 Returns a hash reference containing four keys:
 
-=back
-=over 8
-
-=item * lat - Latitude
-
-=item * lon - Longitude
-
-=item * city - City
-
-=item * state - State two-letter abbreviation.
-
-=back
-=over 4
+  * lat - Latitude
+  * lon - Longitude
+  * city - City
+  * state - State two-letter abbreviation.
 
 =item $record = $gp->lookup_city_state(city => $city, state => $state);
 
 Returns a hash reference containing three keys:
 
-=back
-=over 8
-
-=item * lat - Latitude (Average over postal codes in city)
-
-=item * lon - Longitude (Average over postal codes in city)
-
-=item * postal_codes - Array reference of postal codes in city
-
-=back
-=over 4
+  * lat - Latitude (Average over postal codes in city)
+  * lon - Longitude (Average over postal codes in city)
+  * postal_codes - Array reference of postal codes in city
 
 =item $miles = $gp->calculate_distance(postal_codes => \@postal_codes);
 
@@ -301,21 +284,11 @@ of ($lat, $lon).
 Returns an array reference of hash references with $miles miles of ($lat, $lon).
 Each hash reference contains the following fields:
 
-=back
-=over 8
-
-=item * postal_code - Postal Code
-
-=item * lat - Latitude (If included in @select)
-
-=item * lon - Longitude (If included in @select)
-
-=item * city - City (If included in @select)
-
-=item * state - State two-letter abbreviation (If included in @select)
-
-=back
-=over 4
+  * postal_code - Postal Code
+  * lat - Latitude (If included in @select)
+  * lon - Longitude (If included in @select)
+  * city - City (If included in @select)
+  * state - State two-letter abbreviation (If included in @select)
 
 If $order_by is specified, then the records are sorted by the $order_by field.
 
@@ -338,18 +311,13 @@ Copyright (c) 2001, T.J. Mather, tjmather@tjmather.com
 All rights reserved.  This package is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself.
 
-=head1 COPYRIGHT
-
-Copyright (c) 2001 T.J. Mather.  Geo::PostalCode is free software;
-you may redistribute it and/or modify it under the same terms as Perl itself. 
-
 =head1 SEE ALSO
 
 =over 4
 
-=item * L<Geo::IP> - Look up country by IP Address
+L<Geo::IP> - Look up country by IP Address
 
-=item * zipdy - Free Zip Code Distance Calculator
+zipdy - Free Zip Code Distance Calculator
 
 =back
 
