@@ -1,0 +1,54 @@
+#!/usr/bin/perl
+
+use DB_File;
+use strict;
+use POSIX;
+
+use constant ZIPCODEDB => 'postalcode.db';
+use constant CELLDB    => 'latlon.db';
+use constant CITYDB    => 'city.db';
+
+my (%zipcode, %cell, %city, %lat, %lon);
+
+unlink ZIPCODEDB if -f ZIPCODEDB;
+unlink CELLDB    if -f CELLDB;
+unlink CITYDB    if -f CITYDB;
+
+tie %zipcode, 'DB_File', ZIPCODEDB, O_CREAT, 0666, $DB_BTREE;
+tie %cell,    'DB_File', CELLDB,    O_CREAT, 0666, $DB_BTREE;
+tie %city,    'DB_File', CITYDB,    O_CREAT, 0666, $DB_BTREE;
+
+open ZIP, "Geo-PostalCode_19991101.txt";
+<ZIP>;
+while (<ZIP>) {
+  chomp;
+  my ($zipcode, $lat, $lon, $city, $state) = split("\t");
+
+  $zipcode{$zipcode} = "$lat,$lon,$city,$state";
+  $lat{$zipcode} = $lat;
+  $lon{$zipcode} = $lon;
+
+  my $int_lat = floor($lat);
+  my $int_lon = floor($lon);
+
+  $cell{"$int_lat-$int_lon"} .= $zipcode;
+  $city{"$state$city"} .= $zipcode;
+}
+
+while (my ($k, $v) = each %city) {
+  my @postal_codes = ($v =~ m!(.{5})!g);
+  return unless @postal_codes;
+  my ($tot_lat, $tot_lon, $count) = (0,0,0,0);
+  for (@postal_codes) {
+    $tot_lat += $lat{$_};
+    $tot_lon += $lon{$_};
+    $count++;
+  }
+  my $avg_lat = sprintf("%.5f",$tot_lat/$count);
+  my $avg_lon = sprintf("%.5f",$tot_lon/$count);
+  $city{$k} = "$v|$avg_lat|$avg_lon";
+}
+
+untie %zipcode;
+untie %cell;
+untie %city;
