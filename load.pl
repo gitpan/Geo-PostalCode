@@ -35,7 +35,8 @@ while (<ZIP>) {
   $city{"$state$city"} .= $zipcode;
 }
 
-while (my ($k, $v) = each %city) {
+foreach my $k (keys %city) {
+  my $v = $city{$k};
   my @postal_codes = ($v =~ m!(.{5})!g);
   return unless @postal_codes;
   my ($tot_lat, $tot_lon, $count) = (0,0,0,0);

@@ -1,5 +1,10 @@
 Revision history for Perl extension Geo::PostalCode.
 
+0.03  05/17/2002
+	- Work around for Perl/Berkeley DB bug in load.pl
+	  (Kyle Dawkins)
+	- Improved accurancy of PI
+
 0.02  12/23/2001
 	- Documentation fixes
 

@@ -2,7 +2,7 @@ To install, run
 
  lwp-download http://tjmather.com/Geo-PostalCode_19991101.txt.gz
  gunzip Geo-PostalCode_19991101.txt.gz
- ./load.pl
+ ./load.pl        # this will take a few seconds...
  perl Makefile.PL
  make
  make test

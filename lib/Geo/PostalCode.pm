@@ -5,10 +5,10 @@ use vars qw($VERSION);
 use DB_File;
 use POSIX;
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 use constant EARTH_RADIUS => 3956;
-use constant PI => 3.1415;
+use constant PI => 3.14159265;
 
 sub new {
   my ($class, %options) = @_;
@@ -207,7 +207,7 @@ __END__
 
 =head1 NAME
 
-Geo::PostalCode - Find closest postal codes, distance, latitude, and longitude.
+Geo::PostalCode - Find closest zipcodes, distance, latitude, and longitude.
 
 =head1 SYNOPSIS
 
