@@ -5,10 +5,15 @@ use vars qw($VERSION);
 use DB_File;
 use POSIX;
 
-$VERSION = '0.05';
+$VERSION = '0.06';
 
-use constant EARTH_RADIUS => 3956;
 use constant PI => 3.14159265;
+use constant EARTH_RADIUS => 3956;
+use constant EARTH_CIRCUMFERENCE => 2 * PI * EARTH_RADIUS;
+use constant LON_MILEAGE_CONSTANT => 69.1716;
+use constant LAT_DEGREES => 180;
+use constant LON_DEGREES => 360;
+use constant LAT_WIDTH => (PI * EARTH_RADIUS / LAT_DEGREES);
 
 sub new {
   my ($class, %options) = @_;
@@ -68,43 +73,8 @@ sub _calculate_distance {
 }
 
 sub nearby_postal_codes {
-  my ($self, %options) = @_;
-  my ($lat, $lon, $distance) = @options{qw(lat lon distance)};
-
-  my $distance_degrees = (180 / PI) * ($distance / EARTH_RADIUS);
-  my $min_lat = floor($lat - $distance_degrees);
-  my $min_lon = floor($lon - $distance_degrees);
-  my $max_lat = floor($lat + $distance_degrees);
-  my $max_lon = floor($lon + $distance_degrees);
-
-  my @postal_codes;
-  for my $x ($min_lat .. $max_lat) {
-    for my $y ($min_lon .. $max_lon) {
-      next unless _calculate_distance($lat, $lon,
-				      _test_near($lat, $x),
-				      _test_near($lon, $y)) < $distance;
-      my $postal_code_str = $self->{latlon}->{"$x-$y"};
-      next unless $postal_code_str;
-      my @cell_zips = ($postal_code_str =~ m!(.{5})!g);
-      if (_calculate_distance($lat, $lon,
-			      _test_far($lat, $x),
-			      _test_far($lon, $y)) < $distance) {
-	# include all of cell
-	push @postal_codes, @cell_zips;
-      } else {
-	# include only postal code with distance
-	for (@cell_zips) {
-	  my $r = $self->lookup_postal_code(postal_code => $_);
-	  next unless $r;
-	  my $d = _calculate_distance($lat, $lon, $r->{lat}, $r->{lon});
-	  if ($d < $distance) { 
-	    push @postal_codes, $_;
-	  }
-	}
-      }
-    }
-  }
-  return \@postal_codes;
+  my $self = shift;
+  [ map { $_->{postal_code} } @{$self->query_postal_codes(@_)}];
 }
 
 sub query_postal_codes {
@@ -112,35 +82,112 @@ sub query_postal_codes {
   my ($lat, $lon, $distance, $order_by) = @options{qw(lat lon distance order_by)};
   my %select = map {$_ => 1} @{$options{select}};
 
-  my $distance_degrees = (180 / PI) * ($distance / EARTH_RADIUS);
+  my $distance_degrees = _min($distance/LAT_WIDTH,
+			      LAT_DEGREES);
   my $min_lat = floor($lat - $distance_degrees);
-  my $min_lon = floor($lon - $distance_degrees);
   my $max_lat = floor($lat + $distance_degrees);
-  my $max_lon = floor($lon + $distance_degrees);
-
   my @postal_codes;
   for my $x ($min_lat .. $max_lat) {
+    my $lon_rtw; # Latitude wrapped 'round-the-world, so correct longitude
+
+    # Fix absurdly large latitudes.
+    while ($x > LAT_DEGREES)
+    {
+      $x -= LAT_DEGREES;
+    }
+
+    # If we wrapped around a pole, fix up the latitude and set a flag
+    # to fix the longitude when we get there.
+    if ($x > (LAT_DEGREES/2))
+    {
+      $x = -$x + LAT_DEGREES;
+      $lon_rtw = 1;
+    }
+    elsif ($x < -(LAT_DEGREES/2))
+    {
+      my $w = "Changed latitude: $x -> ";
+      $x = -$x - LAT_DEGREES;
+      $lon_rtw = 1;
+    }
+    else
+    {
+      $lon_rtw = 0;
+    }
+
+    # Calculate the number of degrees longitude we need to scan
+    my($lon_distance_degrees);
+    if ($x==90)  # Special case for north pole
+    {
+      $lon_distance_degrees=LON_DEGREES/2;
+    }
+    else
+    {
+      $lon_distance_degrees = _min($distance / _min(_lon_miles($x),_lon_miles($x+1)),
+				   LON_DEGREES/2);
+    }
+
+    # If the latitude wrapped 'round-the-world and the longitude
+    # search diameter extends around the entire world, the search
+    # areas for one latitude and its round-the-world counterpart will
+    # overlap.  Correct this by shrinking the search area of the
+    # wrapped latitude.
+    # Yes, this is confusing.
+    if ($lon_rtw && $lon_distance_degrees > (LON_DEGREES/4))
+    {
+      $lon_distance_degrees = LON_DEGREES/2 - $lon_distance_degrees;
+    }
+    my $min_lon = floor($lon - $lon_distance_degrees);
+    my $max_lon = floor($lon + $lon_distance_degrees);
+
+    # Special-case hack:
+    # Shrink whole-world searches, to prevent overlap.
+    if (($max_lon-$min_lon) == LON_DEGREES)
+    {
+      $max_lon--;
+    }
+
     for my $y ($min_lon .. $max_lon) {
+
+      # Correct longitude for latitude that wrapped 'round-the-world.
+      if ($lon_rtw)
+      {
+	$y += 180;
+      }
+
+      # Correct longitudes that wrap around boundaries
+      while ($y > (LON_DEGREES/2))
+      {
+	$y -= LON_DEGREES;
+      }
+      while ($y < -(LON_DEGREES/2))
+      {
+	$y += LON_DEGREES;
+      }
+
       next unless _calculate_distance($lat, $lon,
 				      _test_near($lat, $x),
-				      _test_near($lon, $y)) < $distance;
+				      _test_near($lon, $y)) <= $distance;
       my $postal_code_str = $self->{latlon}->{"$x-$y"};
       next unless $postal_code_str;
       my @cell_zips = ($postal_code_str =~ m!(.{5})!g);
       if (_calculate_distance($lat, $lon,
 			      _test_far($lat, $x),
-			      _test_far($lon, $y)) < $distance) {
+			      _test_far($lon, $y)) <= $distance) {
 	# include all of cell
 	for (@cell_zips) {
-	  my $r = $self->lookup_postal_code(postal_code => $_);
-	  next unless $r;
 	  my %h = (postal_code => $_);
-	  for my $field (keys %select) {
-	    if ($field eq 'distance') {
-	      my $d = _calculate_distance($lat, $lon, $r->{lat}, $r->{lon});
-	      $h{distance} = $d;
-	    } else {
-	      $h{$field} = $r->{$field};
+	  if ($select{distance}||$select{lat}||$select{lon}||$select{city}||$select{state})
+	  {
+	    my $r = $self->lookup_postal_code(postal_code => $_);
+	    next unless $r;
+	    for my $field (keys %select) {
+	      if ($field eq 'distance') {
+		$h{distance} = _calculate_distance($lat,$lon,$r->{lat},$r->{lon});
+	      } elsif ($field eq 'postal_code') {
+		; # Do Nothing.
+	      } else {
+		$h{$field} = $r->{$field};
+	      }
 	    }
 	  }
 	  push @postal_codes, \%h;
@@ -151,11 +198,13 @@ sub query_postal_codes {
 	  my $r = $self->lookup_postal_code(postal_code => $_);
 	  next unless $r;
 	  my $d = _calculate_distance($lat, $lon, $r->{lat}, $r->{lon});
-	  if ($d < $distance) { 
+	  if ($d <= $distance) { 
 	    my %h = (postal_code => $_);
 	    for my $field (keys %select) {
 	      if ($field eq 'distance') {
 		$h{distance} = $d;
+	      } elsif ($field eq 'postal_code') {
+		; # Do Nothing.
 	      } else {
 		$h{$field} = $r->{$field};
 	      }
@@ -180,11 +229,16 @@ sub _test_near {
   my ($center, $cell) = @_;
   if (floor($center) == $cell) {
     return $center;
-  } elsif ($cell < $center) {
+  } elsif ($cell < $center and (_sign($cell)==_sign($center) or $center < (LON_DEGREES/4))) {
     return $cell + 1;
   } else {
     return $cell;
   }
+}  
+
+sub _sign
+{
+  return $_[0]==0?0:($_[0]/abs($_[0]));
 }
 
 sub _test_far {
@@ -200,6 +254,21 @@ sub _test_far {
   } else {
     return $cell + 1;
   }
+}
+
+sub _lon_miles
+{
+  my($lat)=@_;
+
+  # Formula from:
+  #   http://www.malaysiagis.com/related_technologies/mapping/basics1b.cfm
+  my $r = cos($lat*PI/180)*LON_MILEAGE_CONSTANT;
+  $r;
+}
+
+sub _min
+{
+  return $_[0]<$_[1]?$_[0]:$_[1];
 }
 
 1;
@@ -310,6 +379,10 @@ Copyright (c) 2002, T.J. Mather, tjmather@tjmather.com
 
 All rights reserved.  This package is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself.
+
+=head1 CREDITS
+
+Thanks to Scott Gifford for contributing multiple bug fixes and code cleanup.
 
 =head1 SEE ALSO
 

@@ -4,6 +4,17 @@ use DB_File;
 use strict;
 use POSIX;
 
+use vars qw($ZIP $DEFZIP);
+$DEFZIP = "Geo-PostalCode_19991101.txt";
+if ($ARGV[0])
+{
+  $ZIP=$ARGV[0];
+}
+else
+{
+  $ZIP=$DEFZIP;
+}
+
 use constant ZIPCODEDB => 'postalcode.db';
 use constant CELLDB    => 'latlon.db';
 use constant CITYDB    => 'city.db';
@@ -18,7 +29,18 @@ tie (%zipcode, 'DB_File', ZIPCODEDB, O_RDWR|O_CREAT, 0666, $DB_BTREE) or die "ca
 tie (%cell,    'DB_File', CELLDB,    O_RDWR|O_CREAT, 0666, $DB_BTREE) or die "cannot tie %cell to file";
 tie (%city,    'DB_File', CITYDB,    O_RDWR|O_CREAT, 0666, $DB_BTREE) or die "cannot tie %city to file";
 
-open ZIP, "Geo-PostalCode_19991101.txt" or die "Cant find Geo-PostalCode_19991101.txt (download from http://tjmather.com/Geo-PostalCode_19991101.txt.gz)\n";
+if (!open ZIP)
+{
+  if ($ZIP eq $DEFZIP)
+  {
+    die "Cant find '$DEFZIP' (download from http://tjmather.com/$DEFZIP.gz)\n";
+  }
+  else
+  {
+    die "Can't open input file '$ZIP'\n";
+  }
+}
+
 <ZIP>;
 while (<ZIP>) {
   chomp;
@@ -38,7 +60,7 @@ while (<ZIP>) {
 foreach my $k (keys %city) {
   my $v = $city{$k};
   my @postal_codes = ($v =~ m!(.{5})!g);
-  return unless @postal_codes;
+  next unless @postal_codes;
   my ($tot_lat, $tot_lon, $count) = (0,0,0,0);
   for (@postal_codes) {
     $tot_lat += $lat{$_};

@@ -27,7 +27,7 @@ ok(compare_arrays(\@expected, \@postal_codes));
 
 @postal_codes = sort @{$gp->nearby_postal_codes(lat => $r->{lat}, lon => $r->{lon}, distance => 200)};
 
-ok(@postal_codes, 3963);
+ok(@postal_codes, 4239);
 
 my $postal_codes = $gp->query_postal_codes(lat => $r->{lat}, lon => $r->{lon}, distance => 2, select => ['distance','city','state','lat','lon'], order_by => 'distance');
 

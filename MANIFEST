@@ -6,3 +6,5 @@ README
 lib/Geo/PostalCode.pm
 load.pl
 t/01_basic.t
+t/02_polevault.t
+edgetest.data
