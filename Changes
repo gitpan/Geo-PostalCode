@@ -1,5 +1,43 @@
 Revision history for Perl extension Geo::PostalCode.
 
+0.07  05/22/2006
+
+    - Added support for building the DB files from the more recent
+    zip-code data here:
+
+      http://civicspacelabs.org/releases/zipcodes/zipcodes-csv-10-Aug-2004.tgz
+
+    The old data will continue to work. (Sam Tregar)
+
+The following changes contributed by Scott Gifford of HomeSurfUSA.com
+
+  Subclassing
+  * Move database installation code from load.pl into a module, to
+    make subclassing easier.
+  * Modify instructions to discuss proposed "Geo::PostalCode::US"
+    to get US postal codes.
+
+  New Functionality
+  * You can specify constructor arguments "units" or "earth_radius" to
+    change the units that Geo::PostalCode operates in.  By default it
+    supports miles and kilometers, but it can support any unit if you
+    provide the earth's radius in that unit.
+ 
+  Speed Improvements for Very Large Searches
+  * Allow overriding B-Tree cache size with "cachesize" constructor
+    argument.
+  * Very small speedups in query_postal_codes.
+
+  Major Cleanup
+  * All required files for testing included in package, so that a
+    "make test" from CPAN will succeed.
+
+  Minor Cleanup
+  * Better error checking of database tie commands.
+  * Minor syntax fixes to split.
+  * Use name "geo_postalcode_makedb" instead of "load.pl", so it can
+    be installed in a bin directory.
+
 0.06  09/24/2003
 	Scott Gifford contribed the following changes
   * query_postal_codes contained some errors:

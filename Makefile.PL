@@ -4,4 +4,10 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'	=> 'Geo::PostalCode',
     'VERSION_FROM' => 'lib/Geo/PostalCode.pm', # finds $VERSION
+    'INST_SCRIPT' => 'script',
+    'PREREQ_PM' => {
+        Test::More 	=> 0,
+        File::Spec	=> 0,
+        FileHandle	=> 0,
+    },
 );

@@ -3,15 +3,15 @@ codes.  It can find the postal codes within a specified distance of another
 postal code.  It can lookup the city, state, longitude and latitude by
 postal code.
 
-The data is from the 1999 US Census database of U.S. Postal Codes,
-available from http://www.census.gov/geo/www/tiger/zip1999.html.
-
 To access the data, it uses Berkeley DB, which is fast and portable
 (most Linux/Unix servers have it pre-installed.)
 
 To install, see the INSTALL file.
 
-Copyright (c) 2002, MaxMind.com, tjmather@maxmind.com
+This class is designed to be easy to subclass.  For example,
+Geo::PostalCode::US could contain all US Zipcodes.
+
+Copyright (c) 2006, MaxMind.com, tjmather@maxmind.com
 
 All rights reserved.  This package is free software; you can redistribute it
 and/or modify it under the same terms as Perl itself.
